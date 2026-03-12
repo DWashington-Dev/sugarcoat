@@ -23,9 +23,9 @@ class GlucoseReading(db.Model):
     value = db.Column(db.Integer, nullable=False)
     trend = db.Column(db.String)
     trend_rate = db.Column(db.Float)
-
-def __repr__(self):
-    return f'<GlucoseReading {self.timestamp}: {self. value}>' # <Global Reading 2026-03-11: 114>
+    
+    def __repr__(self):
+        return f'<GlucoseReading {self.timestamp}: {self. value}>' # <Global Reading 2026-03-11: 114>
 
 @app.route('/') # when someone visits the homepage ('/'), run this below:
 def home():
