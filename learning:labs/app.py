@@ -87,7 +87,30 @@ def glucose():
             "endDate": "2026-03-11T00:00:00"
         }
     )
-    return jsonify(response.json())
+    data = response.json()
+
+    for reading in data['records']:
+        existing = GlucoseReading.query.filter_by(timestamp=reading['systemTime']).first()
+        if not existing:
+            new_reading = GlucoseReading(
+                timestamp=reading['systemTime'],
+                value=reading['value'],
+                trend=reading['trend'],
+                trend_rate=reading.get('trendRate')
+            )
+            db.session.add(new_reading)
+    
+    db.session.commit()
+    return jsonify(data)
+
+@app.route('/readings')
+def readings():
+    all_readings = GlucoseReading.query.all()
+    return jsonify([{
+        'timestamp': r.timestamp,
+        'value': r.value,
+        'trend': r.trend
+    } for r in all_readings])
 
 @app.route("/range") # powers data range selection
 def range():
