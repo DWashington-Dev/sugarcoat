@@ -1,21 +1,30 @@
+import pandas as pd
 import os # way of talking to your operating system
 import secrets 
-from dotenv import load_dotenv # loading the .env with dexcom client id
 import requests # separate Python library, it's what you use to make outgoing calls to external APIs
+from dotenv import load_dotenv # loading the .env with dexcom client id
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask import Flask, session, jsonify , redirect, render_template, request # imported the 'Flask' library & jsonify is to convert our python contents into a webpage
+from flask_sqlalchemy import SQLAlchemy # SQLAlchemy is the tool that lets you talk to a database using Python instead of SQL
+import anthropic
 
-access_token = None
 load_dotenv() # load the .env file
-
 CLIENT_ID = os.getenv('DEXCOM_CLIENT_ID') 
 CLIENT_SECRET = os.getenv('DEXCOM_CLIENT_SECRET') # grabs a specific value out of the .env by name
 REDIRECT_URI = os.getenv('DEXCOM_REDIRECT_URI')
 
-from flask import Flask , jsonify , redirect, request # imported the 'Flask' library & jsonify is to convert our python contents into a webpage
-from flask_sqlalchemy import SQLAlchemy # SQLAlchemy is the tool that lets you talk to a database using Python instead of SQL
 
 app = Flask(__name__) # creating the app and storing it in the 'app' variable
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sugarcoat.db'
+app.secret_key = os.getenv('SECRET_KEY')
 db = SQLAlchemy(app)
+claude = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+limiter = Limiter(
+    get_remote_address, # grabs the persons IP address, if too many requests are made from it, you're out.
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 class GlucoseReading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,8 +37,8 @@ class GlucoseReading(db.Model):
         return f'<GlucoseReading {self.timestamp}: {self. value}>' # <Global Reading 2026-03-11: 114>
 
 @app.route('/') # when someone visits the homepage ('/'), run this below:
-def home():
-    return "SugarCoat is ALIVE" # this the function that runs when someone hits the '/' route
+def index():
+    return render_template('index.html') # this the function that runs when someone hits the '/' route
 
 @app.route('/data') # when someone visits the data page ('/data'), run this below:
 def data(): # will replace with real data soon
@@ -46,6 +55,7 @@ def about(): # "define [page]", could become an about page
 
 @app.route('/login') # powers the login screeen
 def login():
+    print("CLIENT_ID:", CLIENT_ID) 
     state = secrets.token_hex(16) # generates a 32-char token string, required in v3
     auth_url = (
         "https://sandbox-api.dexcom.com/v3/oauth2/login?" # running v3 * NOT V2 *
@@ -59,7 +69,6 @@ def login():
 
 @app.route('/callback') # happens behind the scenes after auth
 def callback():
-    global access_token
     code = request.args.get('code') # Dexcom sends the auth code back to your callback
     response = requests.post(
         "https://sandbox-api.dexcom.com/v3/oauth2/token", # V3!!
@@ -72,7 +81,7 @@ def callback():
         }
     )
     tokens = response.json() # Dexcom's response, and .json() converts it from raw text to Python dictonary
-    access_token = tokens['access_token']
+    session['access_token'] = tokens['access_token']
     return jsonify(tokens) # converts the dictionary back into JSON and sends to the browser to see token data 
 
 @app.route('/glucose') # This is what powers the dashboard chart
@@ -80,11 +89,11 @@ def glucose():
     response = requests.get(
         "https://sandbox-api.dexcom.com/v3/users/self/egvs",
         headers={
-            "Authorization": "Bearer " + access_token
+            "Authorization": "Bearer " + session['access_token']
         },
         params={
-            "startDate": "2026-03-01T00:00:00",
-            "endDate": "2026-03-11T00:00:00"
+            "startDate": "2026-03-10T00:00:00",
+            "endDate": "2026-03-20T00:00:00"
         }
     )
     data = response.json()
@@ -112,15 +121,98 @@ def readings():
         'trend': r.trend
     } for r in all_readings])
 
+@app.route('/stats')
+def stats():
+    all_readings = GlucoseReading.query.all() # query the db and grab every row from the GR table and store them in A_R
+    df = pd.DataFrame ([{ # df meaning DataFrame, pandas version of a table
+        'timestamp': r.timestamp,
+        'value': r.value,
+        'trend': r.trend
+    } for r in all_readings])
+
+    print(df.columns.tolist())
+    avg = df['value'].mean()
+    high = df['value'].max()
+    low = df['value'].min()
+    in_range = df[(df['value'] >= 70) & (df['value'] <=160)]
+    rec_range = df[(df['value'] >=90) & (df['value'] <=130)]
+    tir = round(len(in_range) / len(df) * 100, 1)
+    rec_tir = round(len(rec_range) / len(df) * 100, 1) 
+
+    return jsonify({
+        'avg': round(avg, 1),
+        'high': int(high),
+        'low': int(low),
+        'tir': tir,
+        'rec_tir':rec_tir
+    })
+
 @app.route("/range") # powers data range selection
 def range():
     response = requests.get(
         "https://sandbox-api.dexcom.com/v3/users/self/dataRange",
         headers={
-            "Authorization": "Bearer " + access_token
+            "Authorization": "Bearer " + session['access_token']
         }
     )
     return jsonify(response.json())
+
+@app.route('/analyze', methods=['POST'])
+@limiter.limit("5 per hour")
+def analyze():
+    life_choices = request.get_json()
+    all_readings = GlucoseReading.query.all()
+    df = pd.DataFrame([{
+    'timestamp': r.timestamp,
+    'value': r.value,
+    'trend': r.trend
+    } for r in all_readings])
+
+    avg = df['value'].mean()
+    high = df['value'].max()
+    low = df['value'].min()
+    in_range = df[(df['value'] >= 70) & (df['value'] <=160)]
+    rec_range = df[(df['value'] >=90) & (df['value'] <=130)]
+    tir = round(len(in_range) / len(df) * 100, 1)
+    rec_tir = round(len(rec_range) / len(df) * 100, 1)
+
+    user_message = f"""
+    Glucose Stats:
+    - Average: {round(avg, 1)} mg/dl
+    - High: {int(high)}
+    - Low: {int(low)}
+    - Time in Range: {tir}%
+    - Recommended Time in Range: {rec_tir}%
+
+    Lifestyle:
+    - Diet: {life_choices['diet']}
+    - Activity: {life_choices['activity']}
+    - CGM Engagement: {life_choices['cgm']}
+    - Dosing behavior: {life_choices['dosing']}
+    """
+
+    response = claude.messages.create(
+        model = "claude-sonnet-4-6",
+        max_tokens = 1024,
+        system = """You are a knowledgeable T1D analysis assistant, similar to an endocrinologist reviewing glucose data between appointments.
+
+Given a user's glucose stats and lifestyle inputs, provide a warm, plain-English analysis formatted in markdown that includes:
+- An "Uncoated" summary paragraph of overall patterns
+- **Bolded keywords** for important clinical terms and findings
+- Key points written as complete sentences, not fragments
+- A "Sugar Rushes" section identifying likely causes of highs
+- A "Sugar Crashes" section identifying likely causes of lows  
+- An "Off the Charts" section for outliers and unusual patterns most endocrinologists might miss
+- 2-3 specific, actionable suggestions under "Next Steps"
+
+Tone: warm, supportive, direct, never judgmental. Write like a knowledgeable friend explaining things over coffee, not a doctor writing a clinical report. Avoid medical jargon — if a technical term is necessary, explain it in plain English immediately after. No emojis. No medical disclaimers. Speak directly to the user.""",
+
+        messages =[
+            {"role": "user", "content": user_message}
+        ]
+    ) 
+
+    return jsonify({'analysis': response.content[0].text})
 
 if __name__ == '__main__': # only start the server if youre running this file directly (app.py)
     with app.app_context():
