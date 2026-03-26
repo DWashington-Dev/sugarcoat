@@ -9,7 +9,7 @@ from flask import Flask, session, jsonify , redirect, render_template, request #
 from flask_sqlalchemy import SQLAlchemy # SQLAlchemy is the tool that lets you talk to a database using Python instead of SQL
 import anthropic
 
-load_dotenv() # load the .env file
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env')) # load the .env file
 CLIENT_ID = os.getenv('DEXCOM_CLIENT_ID') 
 CLIENT_SECRET = os.getenv('DEXCOM_CLIENT_SECRET') # grabs a specific value out of the .env by name
 REDIRECT_URI = os.getenv('DEXCOM_REDIRECT_URI')
