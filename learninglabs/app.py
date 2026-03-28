@@ -82,7 +82,7 @@ def callback():
     )
     tokens = response.json() # Dexcom's response, and .json() converts it from raw text to Python dictonary
     session['access_token'] = tokens['access_token']
-    return jsonify(tokens) # converts the dictionary back into JSON and sends to the browser to see token data 
+    return redirect('/') # converts the dictionary back into JSON and sends to the browser to see token data 
 
 @app.route('/glucose') # This is what powers the dashboard chart
 def glucose():
@@ -146,6 +146,11 @@ def stats():
         'tir': tir,
         'rec_tir':rec_tir
     })
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 @app.route("/range") # powers data range selection
 def range():
