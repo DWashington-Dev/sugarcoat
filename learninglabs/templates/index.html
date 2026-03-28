@@ -1459,6 +1459,7 @@
      ANALYSIS
   ───────────────────────────────────── */
   async function runAnalysis() {
+    document.getElementById('btn-confirm').disabled = true;
     closePicker();
 
     document.getElementById('processing-state').classList.remove('hidden');
@@ -1499,6 +1500,7 @@
       document.getElementById('processing-state').classList.add('hidden');
       document.getElementById('analysis-body').innerHTML = '<p style="color:var(--high)">Something went wrong. Please try again.</p>';
       document.getElementById('analysis-results').classList.remove('hidden');
+      document.getElementById('btn-confirm').disabled = false;
     }
   }
 

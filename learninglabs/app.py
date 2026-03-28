@@ -114,7 +114,7 @@ def glucose():
 
 @app.route('/readings')
 def readings():
-    all_readings = GlucoseReading.query.all()
+    all_readings = GlucoseReading.query.order_by(GlucoseReading.timestamp.asc()).all()
     return jsonify([{
         'timestamp': r.timestamp,
         'value': r.value,
