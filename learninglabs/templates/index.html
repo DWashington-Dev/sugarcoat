@@ -3,920 +3,398 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>sugarCoat.</title>
+  <title>sugarCoat — Your Glucose Companion</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary":              "#00A3FF",
+            "primary-dim":          "#0082CC",
+            "primary-container":    "#e0f2fe",
+            "on-primary-container": "#0369a1",
+            "on-surface":           "#334155",
+            "on-surface-variant":   "#64748b",
+            "outline":              "#cbd5e1",
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+          },
+        },
+      },
+    }
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    /* ─── CSS Variables ─────────────────────── */
-    :root {
-      --bg:             #ffffff;
-      --surface:        rgba(255,255,255,0.65);
-      --border:         rgba(148,163,184,0.15);
-      --text:           #0f172a;
-      --text-secondary: #64748b;
-      --text-tertiary:  #94a3b8;
-
-      --blue:           #0ea5e9;
-      --blue-dark:      #0284c7;
-      --blue-light:     #e0f2fe;
-      --blue-xlight:    #f0f9ff;
-
-      --high:           #f43f5e;
-      --high-light:     #fff1f2;
-
-      --low:            #8b5cf6;
-      --low-light:      #f5f3ff;
-
-      --inrange:        #10b981;
-
-      --radius:         12px;
-      --shadow:         0 1px 3px rgba(15,23,42,0.06);
-      --shadow-md:      0 4px 12px rgba(15,23,42,0.08);
-
-      --sidebar-w:      272px;
-      --peek-w:         240px;
-      --nav-h:          56px;
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .glass-panel-blue {
+      background: rgba(224, 242, 254, 0.45);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 2px solid rgba(0, 163, 255, 0.3);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-panel-blue:hover {
+      background: rgba(224, 242, 254, 0.65);
+      backdrop-filter: blur(40px) saturate(220%);
+      -webkit-backdrop-filter: blur(40px) saturate(220%);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 10px 40px -10px rgba(0, 163, 255, 0.2), 0 0 20px 0 rgba(0, 163, 255, 0.1);
+      border-color: rgba(0, 163, 255, 0.5);
+    }
+
+    /* Don't lift the analysis card — it has dynamic content and a button */
+    #analysis-card:hover {
+      transform: none;
+    }
 
     body {
-      font-family: 'Outfit', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #ffffff;
     }
 
-    .hidden { display: none !important; }
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 163, 255, 0.05); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 163, 255, 0.2); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0, 163, 255, 0.4); }
 
-    /* ─── PEEK ZONE (left hover trigger + panel) ── */
-    #peek-zone {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 20px;
-      height: 100vh;
-      z-index: 500;
+    @media (min-height: 800px) and (min-width: 1024px) {
+      .fold-wrapper {
+        min-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
     }
 
-    #peek-zone:hover {
-      width: var(--peek-w);
-    }
-
-    #peek-panel {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: var(--peek-w);
-      height: 100%;
-      background: rgba(255,255,255,0.97);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-right: 1px solid var(--border);
-      box-shadow: 4px 0 32px rgba(15,23,42,0.07);
-      transform: translateX(-100%);
-      transition: transform 0.2s ease;
-      padding: 2rem 1.25rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #peek-zone:hover #peek-panel {
-      transform: translateX(0);
-    }
-
-    .peek-wordmark {
-      font-family: 'Anonymous Pro', monospace;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      margin-bottom: 2rem;
-      display: block;
-      user-select: none;
-    }
-
-    .peek-divider {
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      margin-bottom: 0.5rem;
-      padding: 0 0.75rem;
-    }
-
-    .peek-btn {
-      display: block;
-      width: 100%;
-      text-align: left;
-      background: none;
-      border: none;
-      padding: 0.6rem 0.75rem;
-      border-radius: 8px;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
-      transition: background 0.12s;
-      margin-bottom: 0.2rem;
-    }
-    .peek-btn:hover { background: var(--blue-xlight); color: var(--blue-dark); }
-    .peek-btn.danger { color: var(--high); }
-    .peek-btn.danger:hover { background: var(--high-light); color: var(--high); }
-
-    .peek-spacer { flex: 1; }
-
-    /* ─── RIGHT SIDEBAR ─────────────────────── */
-    #right-sidebar {
-      position: fixed;
-      right: 0;
-      top: var(--nav-h);
-      width: var(--sidebar-w);
-      height: calc(100vh - var(--nav-h));
-      overflow-y: auto;
-      border-left: 1px solid var(--border);
-      background: rgba(255,255,255,0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 1.25rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      z-index: 100;
-    }
-
-    .pattern-card {
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.125rem;
-      box-shadow: var(--shadow);
-    }
-
-    .pattern-title {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      margin-bottom: 0.875rem;
-    }
-    .pattern-card.high .pattern-title { color: var(--high); }
-    .pattern-card.low  .pattern-title { color: var(--low); }
-
-    .pattern-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .pattern-row:last-of-type { border-bottom: none; }
-
-    .pattern-time {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .pattern-avg {
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-    .pattern-card.high .pattern-avg { color: var(--high); }
-    .pattern-card.low  .pattern-avg { color: var(--low); }
-
-    .pattern-unit {
-      font-size: 0.62rem;
-      font-weight: 400;
-      color: var(--text-tertiary);
-    }
-
-    .pattern-label {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      margin-top: 0.75rem;
-      line-height: 1.5;
-    }
-
-    .sidebar-empty {
-      font-size: 0.78rem;
-      color: var(--text-tertiary);
-      padding: 0.25rem 0;
-    }
-
-    /* ─── NAV ───────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      height: var(--nav-h);
-      background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-
-    .nav-left { display: flex; align-items: center; gap: 1rem; }
-
-    .wordmark {
-      font-family: 'Anonymous Pro', monospace;
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      user-select: none;
-    }
-
-    .nav-back {
-      background: none;
-      border: none;
-      color: var(--blue);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 0.35rem 0.7rem;
-      border-radius: 6px;
-      transition: background 0.12s;
-      font-family: 'Outfit', sans-serif;
-    }
-    .nav-back:hover { background: var(--blue-light); }
-
-    /* ─── SHARED BUTTONS ────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      text-decoration: none;
-    }
-    .btn:active { transform: scale(0.98); }
-
-    .btn-primary {
-      background: var(--blue);
-      color: white;
-      padding: 0.75rem 1.75rem;
-      font-size: 0.95rem;
-    }
-    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
-
-    .btn-dark {
-      background: var(--text);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      font-size: 0.9rem;
-    }
-    .btn-dark:hover { background: #1e293b; transform: translateY(-1px); }
-
-    /* ─── LANDING STATE ─────────────────────── */
-    #landing-state {
-      min-height: calc(100vh - var(--nav-h));
-      display: flex;
-      flex-direction: column;
-    }
-
-    .hero {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem 3rem;
-      gap: 1.5rem;
-    }
-
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      max-width: 700px;
-      color: var(--text);
-    }
-
-    .hero p {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      max-width: 520px;
-      line-height: 1.6;
-    }
-
-    .video-slot {
-      padding: 0 2rem 3rem;
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .video-placeholder {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      height: 360px;
-      background: rgba(255,255,255,0.5);
-      backdrop-filter: blur(10px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      color: var(--text-secondary);
-    }
-
-    .video-play-icon {
-      width: 48px;
-      height: 48px;
-      background: var(--blue-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--blue);
-      font-size: 1.2rem;
-    }
-
-    /* ─── DASHBOARD STATE ───────────────────── */
-    #dashboard-state {
-      padding: 1.5rem 1.5rem 3rem 1.5rem;
-      padding-right: calc(var(--sidebar-w) + 1.5rem);
-    }
-
-    /* Stat strip */
-    .stat-strip {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.75rem;
-    }
-
-    .stat-card {
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: var(--shadow);
-      opacity: 0;
-      animation: slideUp 0.4s ease forwards;
-    }
-    .stat-card:nth-child(1) { animation-delay: 0.08s; }
-    .stat-card:nth-child(2) { animation-delay: 0.16s; text-align: center; }
-    .stat-card:nth-child(3) { animation-delay: 0.24s; text-align: right; }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .stat-label {
-      font-size: 0.62rem;
-      font-weight: 600;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1;
-      color: var(--text);
-    }
-
-    .stat-sub {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin-top: 0.3rem;
-    }
-
-    .stars-row {
-      display: flex;
-      justify-content: center;
-      gap: 3px;
-      font-size: 1.4rem;
-      margin-bottom: 0.1rem;
-    }
-
-    /* Card base */
-    .card {
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: var(--shadow);
-    }
-
-    .card + .card { margin-top: 1.25rem; }
-
-    .card-title {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-    }
-
-    /* Charts grid */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .mini-chart-wrap {
-      position: relative;
-      height: 140px;
-    }
-
-    .big-chart-wrap {
-      position: relative;
-      height: 240px;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Analysis trigger */
-    .analysis-trigger {
-      text-align: center;
-      padding: 0.5rem 0;
-      margin-top: 1.25rem;
-    }
-
-    /* ─── DROP SPINNER (processing state) ── */
-    #processing-state {
-      text-align: center;
-      padding: 2.5rem 1.5rem;
-      margin-top: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .drop-ring {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      animation: spin 1.15s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /*
-      Each drop sits at 12 o'clock, pointing UP.
-      scaleY(-1) on the SVG flips the point to face INWARD (toward center).
-      transform-origin keeps each drop orbiting the ring center as it rotates.
-      Ring center (40,40) relative to drop top-left (33.5, 2): 6.5px, 38px.
-    */
-    .drop {
-      position: absolute;
-      left: calc(50% - 6.5px);
-      top: 2px;
-      width: 13px;
-      height: 20px;
-      transform-origin: 6.5px 38px;
-    }
-
-    .drop:nth-child(odd)  { color: var(--blue); }
-    .drop:nth-child(even) { color: #7dd3fc; }
-
-    .drop:nth-child(1) { transform: rotate(0deg);   }
-    .drop:nth-child(2) { transform: rotate(45deg);  }
-    .drop:nth-child(3) { transform: rotate(90deg);  }
-    .drop:nth-child(4) { transform: rotate(135deg); }
-    .drop:nth-child(5) { transform: rotate(180deg); }
-    .drop:nth-child(6) { transform: rotate(225deg); }
-    .drop:nth-child(7) { transform: rotate(270deg); }
-    .drop:nth-child(8) { transform: rotate(315deg); }
-
-    .drop svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-      transform: scaleY(-1); /* point faces inward */
-    }
-
-    .processing-msg {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    /* Analysis results */
-    #analysis-results { margin-top: 1.25rem; }
-
-    .analysis-body {
-      font-size: 0.9rem;
-      line-height: 1.7;
-      color: var(--text);
-    }
-    .analysis-body h2 { font-size: 0.95rem; font-weight: 700; color: var(--blue); margin: 1rem 0 0.35rem; }
+    /* Analysis output markdown */
+    .analysis-body h2 { font-size: 0.95rem; font-weight: 700; color: #00A3FF; margin: 1rem 0 0.35rem; }
     .analysis-body h3 { font-size: 0.9rem; font-weight: 700; margin: 0.75rem 0 0.3rem; }
-    .analysis-body p  { margin-bottom: 0.6rem; }
-    .analysis-body strong { color: var(--text); }
+    .analysis-body p  { margin-bottom: 0.6rem; font-size: 0.875rem; line-height: 1.7; color: #334155; }
+    .analysis-body strong { font-weight: 700; }
     .analysis-body ul { padding-left: 1.25rem; margin-bottom: 0.6rem; }
-    .analysis-body li { margin-bottom: 0.25rem; }
+    .analysis-body li { margin-bottom: 0.25rem; font-size: 0.875rem; line-height: 1.6; color: #334155; }
 
-    /* ─── CUSTOM CHART TOOLTIP ───────────────── */
-    .chart-tooltip {
-      position: absolute;
-      pointer-events: none;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.5rem 0.75rem;
-      box-shadow: 0 4px 16px rgba(15,23,42,0.1);
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      white-space: nowrap;
-      font-family: 'Outfit', sans-serif;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      transform: translateX(-50%);
-      z-index: 50;
-    }
-
-    .tt-val {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .tt-unit {
-      font-size: 0.72rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-
-    .tt-time {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-
-    /* ─── BUBBLE PICKER OVERLAY ──────────────── */
-    #picker-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.2);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-
+    /* Picker overlay */
     .picker-panel {
-      background: rgba(255,255,255,0.97);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      background: white;
+      border: 2px solid rgba(0, 163, 255, 0.25);
+      border-radius: 1.5rem;
       padding: 2rem;
       width: 100%;
       max-width: 440px;
-      box-shadow: 0 20px 48px rgba(15,23,42,0.1);
+      box-shadow: 0 20px 60px rgba(0, 163, 255, 0.12);
     }
-
-    .picker-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-    }
-
-    .picker-title { font-size: 1.05rem; font-weight: 700; }
-
-    .picker-close {
-      width: 28px;
-      height: 28px;
-      background: #f1f5f9;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.12s;
-    }
-    .picker-close:hover { background: var(--blue-light); }
-
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-    }
-
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
     .category-bubble {
-      border: 1.5px solid rgba(148,163,184,0.3);
-      border-radius: 12px;
-      padding: 1.25rem 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      position: relative;
+      border: 2px solid rgba(148,163,184,0.3); border-radius: 1rem;
+      padding: 1rem 0.75rem; text-align: center; cursor: pointer;
+      transition: all 0.15s; position: relative;
     }
-    .category-bubble:hover { border-color: var(--blue); background: var(--blue-xlight); }
-    .category-bubble.done  { border-color: var(--blue); background: var(--blue-light); }
+    .category-bubble:hover { border-color: #00A3FF; background: #f0f9ff; }
+    .category-bubble.done  { border-color: #00A3FF; background: #e0f2fe; }
     .category-bubble.done::after {
-      content: '✓';
-      position: absolute;
-      top: -8px; right: -8px;
-      width: 20px; height: 20px;
-      background: var(--blue);
-      color: white;
-      border-radius: 50%;
-      font-size: 0.65rem;
-      font-weight: 700;
-      line-height: 20px;
-      text-align: center;
+      content: '✓'; position: absolute; top: -8px; right: -8px;
+      width: 20px; height: 20px; background: #00A3FF; color: white;
+      border-radius: 50%; font-size: 0.65rem; font-weight: 700;
+      line-height: 20px; text-align: center;
     }
-
-    .cat-icon    { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
-    .cat-name    { font-size: 0.85rem; font-weight: 700; }
-    .cat-chosen  { font-size: 0.7rem; font-weight: 600; color: var(--blue); margin-top: 0.2rem; min-height: 0.9em; }
-
+    .cat-icon   { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+    .cat-name   { font-size: 0.85rem; font-weight: 700; color: #334155; }
+    .cat-chosen { font-size: 0.7rem; font-weight: 600; color: #00A3FF; margin-top: 0.2rem; min-height: 0.9em; }
     .suboptions-back {
-      background: none;
-      border: none;
-      color: var(--blue);
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 0;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
+      background: none; border: none; color: #00A3FF;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      padding: 0; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.25rem;
     }
-
-    .suboptions-heading { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.875rem; }
-
-    .suboptions-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.6rem;
-      margin-bottom: 1.25rem;
-    }
-
+    .suboptions-heading { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.875rem; color: #334155; }
+    .suboptions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.25rem; }
     .sub-chip {
-      border: 1px solid rgba(148,163,184,0.3);
-      border-radius: 8px;
-      padding: 0.75rem 0.6rem;
-      text-align: center;
-      cursor: pointer;
-      font-size: 0.8rem;
-      font-weight: 600;
-      transition: all 0.12s;
-      color: var(--text);
+      border: 2px solid rgba(148,163,184,0.3); border-radius: 0.75rem;
+      padding: 0.75rem 0.6rem; text-align: center; cursor: pointer;
+      font-size: 0.8rem; font-weight: 600; transition: all 0.12s; color: #334155;
     }
-    .sub-chip:hover    { border-color: var(--blue); background: var(--blue-xlight); }
-    .sub-chip.selected { border-color: var(--blue); background: var(--blue); color: white; }
-
+    .sub-chip:hover    { border-color: #00A3FF; background: #f0f9ff; }
+    .sub-chip.selected { border-color: #00A3FF; background: #00A3FF; color: white; }
+    .selections-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.875rem; min-height: 1.25rem; }
+    .sel-tag { background: #e0f2fe; color: #0369a1; border-radius: 100px; padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 700; }
     .btn-confirm {
-      width: 100%;
-      padding: 0.875rem;
-      border-radius: 8px;
-      border: none;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s;
-      background: var(--blue);
-      color: white;
+      width: 100%; padding: 0.875rem; border-radius: 9999px; border: none;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; background: #00A3FF; color: white;
     }
-    .btn-confirm:disabled                  { background: #e2e8f0; color: var(--text-secondary); cursor: not-allowed; }
-    .btn-confirm:not(:disabled):hover      { background: var(--blue-dark); transform: translateY(-1px); }
+    .btn-confirm:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .btn-confirm:not(:disabled):hover { background: #0082CC; transform: translateY(-1px); }
 
-    .selections-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 0.875rem;
-      min-height: 1.25rem;
-    }
-
-    .sel-tag {
-      background: var(--blue-light);
-      color: var(--blue-dark);
-      border-radius: 100px;
-      padding: 0.2rem 0.6rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-    }
-
-    /* ─── Responsive ────────────────────────── */
-    @media (max-width: 900px) {
-      #right-sidebar { display: none; }
-      #dashboard-state { padding-right: 1.5rem; }
-    }
-
-    @media (max-width: 600px) {
-      .stat-strip  { grid-template-columns: 1fr; }
-      .charts-grid { grid-template-columns: 1fr; }
-      #dashboard-state { padding: 1rem 1rem 2.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e0f2fe;
+      border-top-color: #00A3FF;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
   </style>
 </head>
-<body>
+<body class="text-on-surface antialiased bg-white">
 
-
-<!-- ═══════════════════════════════════ -->
-<!--  PEEK ZONE (left hover panel)      -->
-<!-- ═══════════════════════════════════ -->
-<div id="peek-zone">
-  <div id="peek-panel">
-    <span class="peek-wordmark">sugarCoat.</span>
-    <span class="peek-divider">Actions</span>
-    <button class="peek-btn" onclick="openPicker()">✦ &nbsp;New Analysis</button>
-    <button class="peek-btn" onclick="resetData()">↺ &nbsp;Reset Data</button>
-    <div class="peek-spacer"></div>
-    <button class="peek-btn danger" onclick="logout()">→ &nbsp;Log Out</button>
-  </div>
+<!-- Init loader -->
+<div id="init-loader" style="position:fixed;inset:0;background:white;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;transition:opacity 0.35s;">
+  <div class="spinner"></div>
+  <p style="color:#64748b;font-size:0.875rem;font-weight:500;">Loading your data...</p>
 </div>
 
 
-<!-- ═══════════════════════════════════ -->
-<!--  RIGHT SIDEBAR (fixed)            -->
-<!-- ═══════════════════════════════════ -->
-<div id="right-sidebar" class="hidden">
-  <div class="pattern-card high">
-    <div class="pattern-title">↑ High Times</div>
-    <div id="highs-pattern"><span class="sidebar-empty">Loading patterns...</span></div>
-  </div>
-  <div class="pattern-card low">
-    <div class="pattern-title">↓ Low Times</div>
-    <div id="lows-pattern"><span class="sidebar-empty">Loading patterns...</span></div>
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════════════ -->
-<!--  NAV                               -->
-<!-- ═══════════════════════════════════ -->
-<nav>
-  <div class="nav-left">
-    <span class="wordmark">sugarCoat.</span>
-    <button id="nav-back-btn" class="nav-back hidden" onclick="goHome()">← Home</button>
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-primary/5">
+  <div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+    <div class="text-2xl font-bold tracking-tighter text-primary lowercase">sugarcoat</div>
+    <div class="hidden md:flex gap-8 items-center">
+      <a class="text-primary font-semibold border-b-2 border-primary pb-1 text-sm tracking-tight" href="#">Dashboard</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors text-sm tracking-tight font-medium" href="#">History</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors text-sm tracking-tight font-medium" href="#">Insights</a>
+    </div>
+    <button onclick="window.location.href='/logout'" class="bg-primary hover:bg-primary-dim text-white px-6 py-2 rounded-full font-medium transition-all active:scale-95 duration-200">
+      Logout
+    </button>
   </div>
 </nav>
 
 
-<!-- ═══════════════════════════════════ -->
-<!--  STATE 1 — LANDING                 -->
-<!-- ═══════════════════════════════════ -->
-<div id="landing-state">
+<main class="pt-20 px-6 max-w-7xl mx-auto space-y-12">
 
-  <section class="hero">
-    <h1>Your glucose data,<br>right at your fingertips.</h1>
-    <p>sugarCoat connects to your Dexcom CGM and translates your readings into plain English — powered by AI.</p>
-    <a href="/login" class="btn btn-primary">Connect with Dexcom</a>
+  <!-- Above-fold wrapper -->
+  <div class="fold-wrapper space-y-8 py-8">
+
+    <!-- Hero: headline + live glucose card -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div class="lg:col-span-7 flex flex-col justify-center space-y-6">
+        <h1 class="text-5xl md:text-7xl font-extrabold text-on-surface tracking-tighter leading-none">
+          Your metabolic <br/><span class="text-primary">harmony</span>, visualized.
+        </h1>
+        <p class="text-lg text-on-surface-variant max-w-xl font-medium leading-relaxed">
+          SugarCoat transforms raw CGM data into plain-English clarity — powered by AI, built for T1D.
+        </p>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="glass-panel-blue p-8 rounded-xl relative overflow-hidden group">
+          <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div>
+          <div class="relative z-10 flex flex-col items-start space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold tracking-widest uppercase mb-2">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              Live Syncing
+            </div>
+            <span class="text-on-surface-variant font-semibold text-xs tracking-widest uppercase">Current Glucose</span>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-current" class="text-8xl md:text-9xl font-extrabold text-primary tracking-tighter">—</span>
+              <span class="text-2xl font-bold text-on-surface-variant">mg/dL</span>
+            </div>
+            <div class="flex items-center gap-2 px-6 py-3 bg-white/90 rounded-full shadow-sm">
+              <span id="trend-icon" class="material-symbols-outlined text-primary">trending_flat</span>
+              <span id="stat-trend" class="font-bold text-on-surface">—</span>
+            </div>
+            <p id="stat-updated" class="text-on-surface-variant text-xs pt-2 italic"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats bar -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <div class="glass-panel-blue p-6 rounded-lg text-center space-y-1">
+        <span class="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Avg Daily</span>
+        <div id="stat-avg" class="text-3xl font-extrabold text-on-surface">—</div>
+        <span class="text-xs text-on-surface-variant">mg/dL</span>
+      </div>
+      <div class="glass-panel-blue p-6 rounded-lg text-center space-y-1">
+        <span class="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Peak</span>
+        <div id="stat-high" class="text-3xl font-extrabold text-on-surface">—</div>
+        <span class="text-xs text-on-surface-variant">Max</span>
+      </div>
+      <div class="glass-panel-blue p-6 rounded-lg text-center space-y-1">
+        <span class="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Lowest</span>
+        <div id="stat-low" class="text-3xl font-extrabold text-on-surface">—</div>
+        <span class="text-xs text-on-surface-variant">Min</span>
+      </div>
+      <div class="glass-panel-blue p-6 rounded-lg text-center space-y-1">
+        <span class="text-[10px] font-bold text-primary uppercase tracking-widest">In Range</span>
+        <div id="stat-tir" class="text-3xl font-extrabold text-primary">—</div>
+        <span class="text-xs text-primary/70">70–160 mg/dL</span>
+      </div>
+    </section>
+
+    <div class="hidden lg:flex justify-center pt-4">
+      <div class="animate-bounce">
+        <span class="material-symbols-outlined text-primary/30">expand_more</span>
+      </div>
+    </div>
+
+  </div><!-- /fold-wrapper -->
+
+
+  <!-- Analysis + Chart -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+
+    <!-- Ethereal Analysis card -->
+    <div class="lg:col-span-5">
+      <div id="analysis-card" class="glass-panel-blue h-full p-8 rounded-xl">
+
+        <!-- Default: ready state -->
+        <div id="analysis-default">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+            </div>
+            <h3 class="text-2xl font-bold tracking-tight">Ethereal Analysis</h3>
+          </div>
+          <p class="text-lg text-on-surface-variant leading-relaxed">
+            Ready to review your metabolic patterns. Tell us about your week and we'll give you a plain-English breakdown.
+          </p>
+          <div class="pt-4 flex flex-wrap gap-2 mb-6">
+            <span class="px-3 py-1 bg-white/60 rounded-full text-xs font-semibold text-primary border border-primary/10">T1D Analysis</span>
+            <span class="px-3 py-1 bg-white/60 rounded-full text-xs font-semibold text-primary border border-primary/10">AI Powered</span>
+          </div>
+          <button onclick="openPicker()" class="w-full bg-primary hover:bg-primary-dim text-white font-bold py-3 px-6 rounded-full transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>Get My Analysis</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- Processing state -->
+        <div id="analysis-processing" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:3rem 0;gap:1.25rem;text-align:center;">
+          <div class="spinner"></div>
+          <p id="processing-msg" class="text-on-surface-variant font-medium text-sm">Running the numbers...</p>
+        </div>
+
+        <!-- Results state -->
+        <div id="analysis-results" style="display:none;">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+            </div>
+            <h3 class="text-2xl font-bold tracking-tight">Ethereal Analysis</h3>
+          </div>
+          <div id="analysis-body" class="analysis-body overflow-y-auto max-h-72"></div>
+          <button onclick="resetAnalysis()" class="w-full mt-5 bg-white hover:bg-primary-container text-primary font-bold py-3 px-6 rounded-full border-2 border-primary/20 transition-all duration-200 active:scale-[0.98] text-sm">
+            Run Again
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Daily Trend chart -->
+    <div class="lg:col-span-7">
+      <div class="glass-panel-blue h-full p-8 rounded-xl space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-2xl font-bold tracking-tight">Daily Trend</h3>
+          <div class="flex gap-2">
+            <button id="btn-6h"  onclick="filterChart(6)"  class="px-3 py-1 text-xs font-bold rounded-full bg-primary text-white">6H</button>
+            <button id="btn-12h" onclick="filterChart(12)" class="px-3 py-1 text-xs font-bold rounded-full text-on-surface-variant">12H</button>
+            <button id="btn-24h" onclick="filterChart(24)" class="px-3 py-1 text-xs font-bold rounded-full text-on-surface-variant">24H</button>
+          </div>
+        </div>
+        <div class="relative" style="height:256px;">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
   </section>
 
-  <div class="video-slot">
-    <div class="video-placeholder">
-      <div class="video-play-icon">▶</div>
-      <strong style="font-size:0.9rem;font-weight:600;color:var(--text-secondary)">See it in action</strong>
-      <small style="font-size:0.8rem;color:var(--text-tertiary)">Coming soon</small>
+
+  <!-- Feature carousel -->
+  <section class="pb-12">
+    <div class="flex overflow-x-auto gap-6 pb-6 custom-scrollbar snap-x snap-mandatory">
+
+      <div class="flex-none w-[85%] md:w-[65%] lg:w-[60%] snap-start">
+        <div class="glass-panel-blue p-8 rounded-xl h-full flex flex-col md:flex-row gap-8 items-center" style="background:linear-gradient(135deg, rgba(255,255,255,0.3), rgba(224,242,254,0.2));">
+          <div class="space-y-4 text-center md:text-left">
+            <h4 class="text-2xl font-bold tracking-tight">The Digital Sanctuary</h4>
+            <p class="text-on-surface-variant font-medium">Experience health tech that breathes. Our minimalist approach reduces data fatigue and helps you focus on living.</p>
+          </div>
+          <div class="w-full md:w-48 h-48 shrink-0 rounded-lg bg-primary-container/40 border border-white/40 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size:4rem;font-variation-settings:'FILL' 1;">favorite</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-none w-[85%] md:w-[35%] lg:w-[30%] snap-start">
+        <div class="glass-panel-blue p-8 rounded-xl h-full flex flex-col justify-between">
+          <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-primary">history</span>
+          </div>
+          <div>
+            <h4 class="text-xl font-bold mb-2">Deep History</h4>
+            <p class="text-sm text-on-surface-variant font-medium">View months of patterns and recognized fluctuations in seconds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-none w-[85%] md:w-[35%] lg:w-[30%] snap-start">
+        <div class="glass-panel-blue p-8 rounded-xl h-full flex flex-col justify-between">
+          <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-primary">analytics</span>
+          </div>
+          <div>
+            <h4 class="text-xl font-bold mb-2">Detailed Patterns</h4>
+            <p class="text-sm text-on-surface-variant font-medium">Identify dawn phenomenon and recurring trends with precision AI mapping.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </section>
 
-</div>
+</main>
 
 
-<!-- ═══════════════════════════════════ -->
-<!--  STATE 2 — DASHBOARD               -->
-<!-- ═══════════════════════════════════ -->
-<div id="dashboard-state" class="hidden">
-
-  <!-- Stat strip -->
-  <div class="stat-strip">
-
-    <div class="stat-card">
-      <div class="stat-label">Avg Glucose</div>
-      <div class="stat-value" id="stat-avg">—</div>
-      <div class="stat-sub">mg/dL</div>
+<!-- Footer -->
+<footer class="bg-slate-50 border-t border-primary/5 w-full rounded-t-[3rem] mt-20">
+  <div class="flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 max-w-7xl mx-auto">
+    <div class="flex flex-col gap-2 mb-8 md:mb-0 text-center md:text-left">
+      <div class="text-lg font-bold text-primary lowercase">sugarcoat</div>
+      <p class="text-xs text-on-surface-variant">© 2026 sugarCoat. All rights reserved.</p>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Your Score</div>
-      <div class="stars-row" id="stat-stars">—</div>
-      <div class="stat-sub" id="stat-a1c">A1C —</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Rec. Time in Range</div>
-      <div class="stat-value" id="stat-tir">—</div>
-      <div class="stat-sub">% at 90–130</div>
-    </div>
-
-  </div>
-
-  <!-- Mini charts -->
-  <div class="charts-grid">
-    <div class="card">
-      <div class="card-title">↑ High Days</div>
-      <div class="mini-chart-wrap">
-        <canvas id="highDayChart"></canvas>
+    <div class="flex flex-col md:flex-row gap-8 items-center">
+      <div class="flex gap-8">
+        <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+        <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+        <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">↓ Low Days</div>
-      <div class="mini-chart-wrap">
-        <canvas id="lowDayChart"></canvas>
-      </div>
-    </div>
   </div>
-
-  <!-- Overview chart -->
-  <div class="card">
-    <div class="card-title">Glucose Overview</div>
-    <div class="big-chart-wrap">
-      <canvas id="overviewChart"></canvas>
-    </div>
-  </div>
-
-  <!-- Analysis trigger -->
-  <div class="card analysis-trigger">
-    <button class="btn btn-dark" onclick="openPicker()">Get My Analysis</button>
-  </div>
-
-  <!-- Processing state -->
-  <div id="processing-state" class="card hidden">
-    <div class="drop-ring">
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-      <div class="drop"><svg viewBox="0 0 13 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 0C6.5 0 13 8.5 13 13.5A6.5 6.5 0 0 1 0 13.5C0 8.5 6.5 0 6.5 0Z" fill="currentColor"/></svg></div>
-    </div>
-    <div class="processing-msg" id="processing-msg">Pulling your readings...</div>
-  </div>
-
-  <!-- Analysis results -->
-  <div id="analysis-results" class="card hidden">
-    <div class="card-title">Your Analysis</div>
-    <div class="analysis-body" id="analysis-body"></div>
-  </div>
-
-</div>
+</footer>
 
 
-<!-- ═══════════════════════════════════ -->
-<!--  BUBBLE PICKER OVERLAY             -->
-<!-- ═══════════════════════════════════ -->
-<div id="picker-overlay" class="hidden">
+<!-- Picker overlay -->
+<div id="picker-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);align-items:center;justify-content:center;">
   <div class="picker-panel">
-
-    <div class="picker-header">
-      <span class="picker-title">Tell us about your week</span>
-      <button class="picker-close" onclick="closePicker()">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+      <span style="font-size:1.1rem;font-weight:700;color:#334155;">Tell us about your week</span>
+      <button onclick="closePicker()" style="background:none;border:none;font-size:1rem;color:#64748b;cursor:pointer;padding:0.25rem;">✕</button>
     </div>
 
-    <!-- Category view -->
     <div id="category-view">
       <div class="category-grid">
-        <div class="category-bubble" id="bubble-diet" onclick="openCategory('diet')">
+        <div class="category-bubble" id="bubble-diet"     onclick="openCategory('diet')">
           <span class="cat-icon">🍽️</span>
           <div class="cat-name">Food</div>
           <div class="cat-chosen" id="chosen-diet"></div>
@@ -926,41 +404,32 @@
           <div class="cat-name">Activity</div>
           <div class="cat-chosen" id="chosen-activity"></div>
         </div>
-        <div class="category-bubble" id="bubble-cgm" onclick="openCategory('cgm')">
+        <div class="category-bubble" id="bubble-cgm"      onclick="openCategory('cgm')">
           <span class="cat-icon">📡</span>
           <div class="cat-name">CGM</div>
           <div class="cat-chosen" id="chosen-cgm"></div>
         </div>
-        <div class="category-bubble" id="bubble-dosing" onclick="openCategory('dosing')">
+        <div class="category-bubble" id="bubble-dosing"   onclick="openCategory('dosing')">
           <span class="cat-icon">💉</span>
           <div class="cat-name">Dosing</div>
           <div class="cat-chosen" id="chosen-dosing"></div>
         </div>
       </div>
-
       <div class="selections-row" id="selections-row"></div>
-
-      <button class="btn-confirm" id="btn-confirm" disabled onclick="runAnalysis()">
-        Analyze
-      </button>
+      <button class="btn-confirm" id="btn-confirm" disabled onclick="runAnalysis()">Analyze</button>
     </div>
 
-    <!-- Sub-options view -->
-    <div id="suboptions-view" class="hidden">
+    <div id="suboptions-view" style="display:none;">
       <button class="suboptions-back" onclick="backToCategories()">← Back</button>
       <div class="suboptions-heading" id="suboptions-heading"></div>
       <div class="suboptions-grid" id="suboptions-grid"></div>
     </div>
-
   </div>
 </div>
 
 
 <script>
-
-  /* ─────────────────────────────────────
-     CATEGORY CONFIG
-  ───────────────────────────────────── */
+  /* ─── CATEGORIES ─── */
   const CATEGORIES = {
     diet: {
       label: 'Food',
@@ -1000,515 +469,268 @@
     }
   };
 
-  /* ─────────────────────────────────────
-     TIME BUCKET CONFIG
-  ───────────────────────────────────── */
-  const TIME_BUCKETS = [
-    { label: '12am–3am',  hours: [0,1,2]    },
-    { label: '3am–6am',   hours: [3,4,5]    },
-    { label: '6am–9am',   hours: [6,7,8]    },
-    { label: '9am–12pm',  hours: [9,10,11]  },
-    { label: '12pm–3pm',  hours: [12,13,14] },
-    { label: '3pm–6pm',   hours: [15,16,17] },
-    { label: '6pm–9pm',   hours: [18,19,20] },
-    { label: '9pm–12am',  hours: [21,22,23] }
-  ];
-
-  /* ─────────────────────────────────────
-     STATE
-  ───────────────────────────────────── */
-  let selections    = { diet: null, activity: null, cgm: null, dosing: null };
+  /* ─── STATE ─── */
+  let selections      = { diet: null, activity: null, cgm: null, dosing: null };
   let currentCategory = null;
-  let charts        = { overview: null, highDay: null, lowDay: null };
-  let processingInt = null;
-  let msgIdx        = 0;
+  let trendChart      = null;
+  let allReadings     = [];
+  let processingInt   = null;
+  let msgIdx          = 0;
 
   const MSGS = [
-    'Pulling your readings...',
     'Running the numbers...',
+    'Pulling your readings...',
     'Sugar coating your results...',
     'Almost there...'
   ];
 
-  /* ─────────────────────────────────────
-     INIT
-  ───────────────────────────────────── */
+  /* ─── INIT ─── */
   async function init() {
     try {
       const glucoseRes = await fetch('/glucose');
-      if (!glucoseRes.ok) { showLanding(); return; }
+      if (!glucoseRes.ok) {
+        window.location.href = '/login';
+        return;
+      }
 
       const [stats, readings] = await Promise.all([
         fetch('/stats').then(r => r.json()),
         fetch('/readings').then(r => r.json())
       ]);
 
-      if (!stats || stats.avg === undefined) { showLanding(); return; }
-
-      showDashboard(stats, readings);
+      allReadings = readings || [];
+      renderStats(stats, allReadings);
+      initTrendChart(allReadings, 6);
 
     } catch (e) {
-      showLanding();
+      window.location.href = '/login';
+    } finally {
+      hideLoader();
     }
   }
 
-  function showLanding() {
-    document.getElementById('landing-state').classList.remove('hidden');
-    document.getElementById('dashboard-state').classList.add('hidden');
-    document.getElementById('right-sidebar').classList.add('hidden');
-    document.getElementById('nav-back-btn').classList.add('hidden');
+  function hideLoader() {
+    const loader = document.getElementById('init-loader');
+    loader.style.opacity = '0';
+    setTimeout(() => { loader.style.display = 'none'; }, 350);
   }
 
-  function showDashboard(stats, readings) {
-    document.getElementById('landing-state').classList.add('hidden');
-    document.getElementById('dashboard-state').classList.remove('hidden');
-    document.getElementById('right-sidebar').classList.remove('hidden');
-    document.getElementById('nav-back-btn').classList.remove('hidden');
+  /* ─── STATS ─── */
+  function renderStats(stats, readings) {
+    document.getElementById('stat-avg').textContent  = stats.avg;
+    document.getElementById('stat-high').textContent = stats.high;
+    document.getElementById('stat-low').textContent  = stats.low;
+    document.getElementById('stat-tir').textContent  = stats.tir + '%';
 
-    renderStats(stats);
-    renderTimeSidebar(readings);
-    initCharts(readings);
-  }
+    if (readings.length) {
+      const latest = readings[readings.length - 1];
+      document.getElementById('stat-current').textContent = latest.value;
+      document.getElementById('stat-trend').textContent   = formatTrend(latest.trend);
+      document.getElementById('trend-icon').textContent   = trendIcon(latest.trend);
 
-  function goHome() {
-    document.getElementById('dashboard-state').classList.add('hidden');
-    document.getElementById('landing-state').classList.remove('hidden');
-    document.getElementById('right-sidebar').classList.add('hidden');
-    document.getElementById('nav-back-btn').classList.add('hidden');
-    document.getElementById('analysis-results').classList.add('hidden');
-    document.getElementById('processing-state').classList.add('hidden');
-    selections = { diet: null, activity: null, cgm: null, dosing: null };
-    syncBubbles();
-    syncSummary();
-    syncConfirm();
-  }
-
-  function resetData() {
-    document.getElementById('analysis-results').classList.add('hidden');
-    document.getElementById('processing-state').classList.add('hidden');
-    selections = { diet: null, activity: null, cgm: null, dosing: null };
-    syncBubbles();
-    syncSummary();
-    syncConfirm();
-  }
-
-  function logout() {
-    window.location.href = '/logout';
-  }
-
-  /* ─────────────────────────────────────
-     STATS
-  ───────────────────────────────────── */
-  function renderStats(stats) {
-    document.getElementById('stat-avg').textContent = stats.avg;
-    document.getElementById('stat-tir').textContent = stats.rec_tir + '%';
-
-    const a1c = ((stats.avg + 46.7) / 28.7).toFixed(1);
-    const a   = parseFloat(a1c);
-    let stars = 1;
-    if      (a < 6.5)  stars = 5;
-    else if (a < 7.0)  stars = 5;
-    else if (a < 7.5)  stars = 4;
-    else if (a < 8.5)  stars = 3;
-    else if (a < 10.0) stars = 2;
-
-    document.getElementById('stat-stars').innerHTML = buildStars(stars);
-    document.getElementById('stat-a1c').textContent = `A1C ${a1c}%`;
-  }
-
-  function buildStars(count) {
-    let html = '';
-    for (let i = 0; i < 5; i++) {
-      const color = i < count ? '#0ea5e9' : '#cbd5e1';
-      html += `<span style="color:${color}">★</span>`;
+      const mins = Math.round((Date.now() - new Date(latest.timestamp)) / 60000);
+      document.getElementById('stat-updated').textContent = `Last updated ${mins} min ago`;
     }
-    return html;
   }
 
-  /* ─────────────────────────────────────
-     TIME PATTERN SIDEBAR
-  ───────────────────────────────────── */
-  function analyzeTimePatterns(readings) {
-    return TIME_BUCKETS.map(bucket => {
-      const subset = readings.filter(r => {
-        const h = new Date(r.timestamp).getHours();
-        return bucket.hours.includes(h);
-      });
-      if (subset.length === 0) return null;
-      const avg = Math.round(subset.reduce((s, r) => s + r.value, 0) / subset.length);
-      return { label: bucket.label, avg, count: subset.length };
-    }).filter(Boolean);
+  function formatTrend(trend) {
+    const map = {
+      'flat':           'Stable Trend',
+      'rising':         'Rising',
+      'risingRapidly':  'Rising Rapidly',
+      'falling':        'Falling',
+      'fallingRapidly': 'Falling Rapidly',
+      'none':           'No Trend Data'
+    };
+    return map[trend] || trend || '—';
   }
 
-  function renderTimeSidebar(readings) {
-    if (!readings || !readings.length) return;
-
-    const patterns = analyzeTimePatterns(readings);
-    if (!patterns.length) return;
-
-    const sorted = [...patterns].sort((a, b) => b.avg - a.avg);
-    const highs  = sorted.slice(0, 3);
-    const lows   = sorted.slice(-3).reverse();
-
-    const highTimes = highs.map(b => b.label).join(', ');
-    const lowTimes  = lows.map(b => b.label).join(', ');
-
-    document.getElementById('highs-pattern').innerHTML =
-      highs.map(b => `
-        <div class="pattern-row">
-          <span class="pattern-time">${b.label}</span>
-          <span class="pattern-avg">${b.avg} <span class="pattern-unit">mg/dL</span></span>
-        </div>
-      `).join('') +
-      `<p class="pattern-label">Your spikes tend to happen around ${highTimes}.</p>`;
-
-    document.getElementById('lows-pattern').innerHTML =
-      lows.map(b => `
-        <div class="pattern-row">
-          <span class="pattern-time">${b.label}</span>
-          <span class="pattern-avg">${b.avg} <span class="pattern-unit">mg/dL</span></span>
-        </div>
-      `).join('') +
-      `<p class="pattern-label">Watch out around ${lowTimes} — consider eating before.</p>`;
+  function trendIcon(trend) {
+    if (!trend) return 'trending_flat';
+    const t = trend.toLowerCase();
+    if (t.includes('ris')) return 'trending_up';
+    if (t.includes('fall')) return 'trending_down';
+    return 'trending_flat';
   }
 
-  /* ─────────────────────────────────────
-     CUSTOM CHART TOOLTIP
-  ───────────────────────────────────── */
-  function externalTooltip(context) {
-    const { chart, tooltip } = context;
-    let el = chart.canvas.parentNode.querySelector('.chart-tooltip');
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'chart-tooltip';
-      chart.canvas.parentNode.style.position = 'relative';
-      chart.canvas.parentNode.appendChild(el);
-    }
+  /* ─── CHART ─── */
+  function initTrendChart(readings, hours) {
+    if (!readings.length) return;
 
-    if (tooltip.opacity === 0) {
-      el.style.opacity = '0';
-      return;
-    }
+    const cutoff = new Date(Date.now() - hours * 3600 * 1000);
+    const slice  = readings.filter(r => new Date(r.timestamp) >= cutoff);
+    const labels = slice.map(r => {
+      const d = new Date(r.timestamp);
+      return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    });
+    const values = slice.map(r => r.value);
 
-    const dp  = tooltip.dataPoints[0];
-    const val = dp.parsed.y;
-    const lbl = dp.label;
+    const ctx = document.getElementById('trend-chart').getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, 'rgba(0, 163, 255, 0.18)');
+    grad.addColorStop(1, 'rgba(0, 163, 255, 0.01)');
 
-    el.innerHTML = `<span class="tt-val">${val} <span class="tt-unit">mg/dL</span></span><span class="tt-time">${lbl}</span>`;
-    el.style.opacity = '1';
-    el.style.left = tooltip.caretX + 'px';
-    el.style.top  = (tooltip.caretY - 64) + 'px';
-  }
+    if (trendChart) trendChart.destroy();
 
-  /* ─────────────────────────────────────
-     CHARTS
-  ───────────────────────────────────── */
-  function initCharts(readings) {
-    if (!readings || !readings.length) return;
-    initOverviewChart(readings);
-    initHighDayChart(readings);
-    initLowDayChart(readings);
-  }
-
-  function initOverviewChart(readings) {
-    const labels = readings.map(r => formatTs(r.timestamp));
-    const values = readings.map(r => r.value);
-    const ctx    = document.getElementById('overviewChart').getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-    gradient.addColorStop(0, 'rgba(14,165,233,0.12)');
-    gradient.addColorStop(1, 'rgba(14,165,233,0.01)');
-
-    charts.overview = new Chart(ctx, {
+    trendChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels,
         datasets: [{
-          label: 'Glucose',
           data: values,
-          borderColor: '#0ea5e9',
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          tension: 0.4,
+          borderColor: '#00A3FF',
+          borderWidth: 2.5,
+          backgroundColor: grad,
           fill: true,
-          backgroundColor: gradient
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#00A3FF',
+          pointHoverBorderColor: 'white',
+          pointHoverBorderWidth: 2,
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { intersect: false, mode: 'index' },
         plugins: {
           legend: { display: false },
-          tooltip: { enabled: false, external: externalTooltip }
+          tooltip: {
+            callbacks: { label: ctx => `${ctx.parsed.y} mg/dL` },
+            backgroundColor: 'rgba(255,255,255,0.96)',
+            titleColor: '#334155',
+            bodyColor: '#00A3FF',
+            borderColor: 'rgba(0,163,255,0.2)',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 8,
+          }
         },
         scales: {
-          x: {
-            ticks: { maxTicksLimit: 5, font: { family: 'Outfit', size: 10 }, color: '#94a3b8' },
-            grid: { color: 'rgba(148,163,184,0.08)' },
-            border: { display: false }
-          },
+          x: { display: false },
           y: {
+            grid: { color: 'rgba(0,163,255,0.07)', drawBorder: false },
+            ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 4 },
             min: 40,
-            max: 300,
-            ticks: { font: { family: 'Outfit', size: 10 }, color: '#94a3b8' },
-            grid: { color: 'rgba(148,163,184,0.08)' },
-            border: { display: false }
+            max: 280,
           }
         }
       }
     });
   }
 
-  function initHighDayChart(readings) {
-    const highReadings = readings
-      .filter(r => r.value > 160)
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-    if (highReadings.length === 0) {
-      document.getElementById('highDayChart').parentElement.innerHTML =
-        '<p style="color:var(--text-tertiary);font-size:0.82rem;padding-top:2rem;text-align:center">No highs recorded</p>';
-      return;
-    }
-
-    const slice  = highReadings.slice(0, 12);
-    const labels = slice.map(r => new Date(r.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    const values = slice.map(r => r.value);
-    const ctx    = document.getElementById('highDayChart').getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 140);
-    gradient.addColorStop(0, 'rgba(244,63,94,0.12)');
-    gradient.addColorStop(1, 'rgba(244,63,94,0.01)');
-
-    charts.highDay = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          borderColor: '#f43f5e',
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.4,
-          fill: true,
-          backgroundColor: gradient
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { intersect: false },
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: {
-          x: {
-            ticks: { maxTicksLimit: 3, font: { size: 8 }, color: '#94a3b8' },
-            grid: { display: false },
-            border: { display: false }
-          },
-          y: {
-            min: 160,
-            ticks: { maxTicksLimit: 2, font: { size: 8 }, color: '#94a3b8' },
-            grid: { color: 'rgba(148,163,184,0.08)' },
-            border: { display: false }
-          }
-        }
+  function filterChart(hours) {
+    ['6', '12', '24'].forEach(h => {
+      const btn = document.getElementById(`btn-${h}h`);
+      if (parseInt(h) === hours) {
+        btn.style.cssText = 'padding:0.25rem 0.75rem;font-size:0.75rem;font-weight:700;border-radius:9999px;background:#00A3FF;color:white;border:none;cursor:pointer;';
+      } else {
+        btn.style.cssText = 'padding:0.25rem 0.75rem;font-size:0.75rem;font-weight:700;border-radius:9999px;background:transparent;color:#64748b;border:none;cursor:pointer;';
       }
     });
+    initTrendChart(allReadings, hours);
   }
 
-  function initLowDayChart(readings) {
-    const lowReadings = readings
-      .filter(r => r.value < 70)
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-    if (lowReadings.length === 0) {
-      document.getElementById('lowDayChart').parentElement.innerHTML =
-        '<p style="color:var(--text-tertiary);font-size:0.82rem;padding-top:2rem;text-align:center">No lows recorded</p>';
-      return;
-    }
-
-    const slice  = lowReadings.slice(0, 12);
-    const labels = slice.map(r => new Date(r.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    const values = slice.map(r => r.value);
-    const ctx    = document.getElementById('lowDayChart').getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 140);
-    gradient.addColorStop(0, 'rgba(139,92,246,0.12)');
-    gradient.addColorStop(1, 'rgba(139,92,246,0.01)');
-
-    charts.lowDay = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          borderColor: '#8b5cf6',
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.4,
-          fill: true,
-          backgroundColor: gradient
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { intersect: false },
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: {
-          x: {
-            ticks: { maxTicksLimit: 3, font: { size: 8 }, color: '#94a3b8' },
-            grid: { display: false },
-            border: { display: false }
-          },
-          y: {
-            max: 70,
-            ticks: { maxTicksLimit: 2, font: { size: 8 }, color: '#94a3b8' },
-            grid: { color: 'rgba(148,163,184,0.08)' },
-            border: { display: false }
-          }
-        }
-      }
-    });
-  }
-
-  function formatTs(ts) {
-    return new Date(ts).toLocaleString('en-US', {
-      month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-  }
-
-  /* ─────────────────────────────────────
-     BUBBLE PICKER
-  ───────────────────────────────────── */
+  /* ─── PICKER ─── */
   function openPicker() {
-    document.getElementById('picker-overlay').classList.remove('hidden');
-    showCategories();
+    document.getElementById('picker-overlay').style.display = 'flex';
+    document.getElementById('category-view').style.display  = 'block';
+    document.getElementById('suboptions-view').style.display = 'none';
   }
 
   function closePicker() {
-    document.getElementById('picker-overlay').classList.add('hidden');
+    document.getElementById('picker-overlay').style.display = 'none';
   }
 
-  document.getElementById('picker-overlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closePicker();
-  });
-
-  function showCategories() {
-    document.getElementById('category-view').classList.remove('hidden');
-    document.getElementById('suboptions-view').classList.add('hidden');
-    syncBubbles();
-    syncSummary();
-    syncConfirm();
-  }
-
-  function openCategory(key) {
-    currentCategory = key;
-    const cat = CATEGORIES[key];
-    document.getElementById('category-view').classList.add('hidden');
-    document.getElementById('suboptions-view').classList.remove('hidden');
-    document.getElementById('suboptions-heading').textContent = `How would you describe your ${cat.label.toLowerCase()}?`;
-    document.getElementById('suboptions-grid').innerHTML = cat.options.map(opt => `
-      <div class="sub-chip ${selections[key] === opt.value ? 'selected' : ''}"
-           onclick="pickOption('${key}', '${opt.value}', '${opt.label}', this)">
+  function openCategory(cat) {
+    currentCategory = cat;
+    const cfg = CATEGORIES[cat];
+    document.getElementById('category-view').style.display   = 'none';
+    document.getElementById('suboptions-view').style.display = 'block';
+    document.getElementById('suboptions-heading').textContent = cfg.label;
+    document.getElementById('suboptions-grid').innerHTML = cfg.options.map(opt => `
+      <div class="sub-chip ${selections[cat] === opt.value ? 'selected' : ''}"
+           onclick="pickOption('${cat}', '${opt.value}', '${opt.label}')">
         ${opt.label}
       </div>
     `).join('');
   }
 
-  function pickOption(key, value, label, el) {
-    selections[key] = value;
-    document.querySelectorAll('.sub-chip').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    setTimeout(showCategories, 250);
+  function pickOption(cat, value, label) {
+    selections[cat] = value;
+    document.getElementById(`chosen-${cat}`).textContent = label;
+    backToCategories();
   }
 
-  function backToCategories() { showCategories(); }
+  function backToCategories() {
+    document.getElementById('suboptions-view').style.display = 'none';
+    document.getElementById('category-view').style.display   = 'block';
+    syncBubbles();
+    syncSummary();
+    syncConfirm();
+  }
 
   function syncBubbles() {
-    Object.keys(CATEGORIES).forEach(key => {
-      const bubble = document.getElementById(`bubble-${key}`);
-      const chosen = document.getElementById(`chosen-${key}`);
-      if (selections[key]) {
-        bubble.classList.add('done');
-        const opt = CATEGORIES[key].options.find(o => o.value === selections[key]);
-        chosen.textContent = opt ? opt.label : '';
-      } else {
-        bubble.classList.remove('done');
-        chosen.textContent = '';
-      }
+    Object.keys(CATEGORIES).forEach(cat => {
+      document.getElementById(`bubble-${cat}`).classList.toggle('done', !!selections[cat]);
     });
   }
 
   function syncSummary() {
-    const made = Object.entries(selections).filter(([, v]) => v);
-    document.getElementById('selections-row').innerHTML = made.map(([key, val]) => {
-      const opt = CATEGORIES[key].options.find(o => o.value === val);
-      return `<span class="sel-tag">${CATEGORIES[key].label}: ${opt ? opt.label : val}</span>`;
-    }).join('');
+    document.getElementById('selections-row').innerHTML = Object.entries(selections)
+      .filter(([, v]) => v)
+      .map(([, v]) => `<span class="sel-tag">${v}</span>`)
+      .join('');
   }
 
   function syncConfirm() {
-    const all = Object.values(selections).every(v => v !== null);
-    document.getElementById('btn-confirm').disabled = !all;
+    document.getElementById('btn-confirm').disabled = !Object.values(selections).every(Boolean);
   }
 
-  /* ─────────────────────────────────────
-     ANALYSIS
-  ───────────────────────────────────── */
-  async function runAnalysis() {
-    document.getElementById('btn-confirm').disabled = true;
-    closePicker();
+  /* ─── ANALYSIS ─── */
+  function showAnalysisState(state) {
+    document.getElementById('analysis-default').style.display    = state === 'default'    ? 'block' : 'none';
+    document.getElementById('analysis-processing').style.display = state === 'processing' ? 'flex'  : 'none';
+    document.getElementById('analysis-results').style.display    = state === 'results'    ? 'block' : 'none';
+  }
 
-    document.getElementById('processing-state').classList.remove('hidden');
-    document.getElementById('analysis-results').classList.add('hidden');
+  async function runAnalysis() {
+    closePicker();
+    showAnalysisState('processing');
 
     msgIdx = 0;
     document.getElementById('processing-msg').textContent = MSGS[0];
     processingInt = setInterval(() => {
       msgIdx = (msgIdx + 1) % MSGS.length;
       document.getElementById('processing-msg').textContent = MSGS[msgIdx];
-    }, 1800);
+    }, 2500);
 
     try {
-      const res = await fetch('/analyze', {
+      const res  = await fetch('/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          diet:     selections.diet,
-          activity: selections.activity,
-          cgm:      selections.cgm,
-          dosing:   selections.dosing
-        })
+        body: JSON.stringify(selections)
       });
-
       const data = await res.json();
       clearInterval(processingInt);
-
-      document.getElementById('processing-state').classList.add('hidden');
       document.getElementById('analysis-body').innerHTML = marked.parse(data.analysis);
-      document.getElementById('analysis-results').classList.remove('hidden');
-
-      setTimeout(() => {
-        document.getElementById('analysis-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-
-    } catch (e) {
+      showAnalysisState('results');
+    } catch (err) {
       clearInterval(processingInt);
-      document.getElementById('processing-state').classList.add('hidden');
-      document.getElementById('analysis-body').innerHTML = '<p style="color:var(--high)">Something went wrong. Please try again.</p>';
-      document.getElementById('analysis-results').classList.remove('hidden');
-      document.getElementById('btn-confirm').disabled = false;
+      showAnalysisState('default');
     }
   }
 
-  /* ─────────────────────────────────────
-     BOOT
-  ───────────────────────────────────── */
-  window.addEventListener('DOMContentLoaded', init);
+  function resetAnalysis() {
+    selections = { diet: null, activity: null, cgm: null, dosing: null };
+    syncBubbles();
+    syncSummary();
+    syncConfirm();
+    showAnalysisState('default');
+  }
 
+  init();
 </script>
+
 </body>
 </html>

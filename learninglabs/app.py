@@ -36,6 +36,46 @@ class GlucoseReading(db.Model):
     def __repr__(self):
         return f'<GlucoseReading {self.timestamp}: {self. value}>' # <Global Reading 2026-03-11: 114>
 
+def get_glucose_stats():
+    all_readings = GlucoseReading.query.all()
+    df = pd.DataFrame([{
+        'timestamp': r.timestamp,
+        'value': r.value,
+        'trend': r.trend
+    } for r in all_readings])
+
+    avg = df['value'].mean()
+    high = df['value'].max()
+    low = df['value'].min()
+    in_range = df[(df['value'] >= 70) & (df['value'] <=160)]
+    rec_range = df[(df['value'] >=90) & (df['value'] <=130)]
+    tir = round(len(in_range) / len(df) * 100, 1)
+    rec_tir = round(len(rec_range) / len(df) * 100, 1)
+    
+    return {
+        'avg': round(avg, 1),
+        'high': int(high),
+        'low': int(low),
+        'tir': tir,
+        'rec_tir':rec_tir
+    }
+
+- Time in Range: {stats['tir']}%
+
+def refresh_access_token():
+    response = requests.post(
+        "https://sandbox-api.dexcom.com/v3/oauth2/token",
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": session['refresh_token'],
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+        }
+    )
+    tokens = response.json()
+    session['access_token'] = tokens['access_token']
+    session['refresh_token'] = tokens['refresh_token']
+
 @app.route('/') # when someone visits the homepage ('/'), run this below:
 def index():
     return render_template('index.html') # this the function that runs when someone hits the '/' route
@@ -82,7 +122,9 @@ def callback():
     )
     tokens = response.json() # Dexcom's response, and .json() converts it from raw text to Python dictonary
     session['access_token'] = tokens['access_token']
-    return redirect('/') # converts the dictionary back into JSON and sends to the browser to see token data 
+    session['refresh_token'] = tokens['refresh_token']
+
+    return redirect('/') # converts the dictionary back into JSON and sends to the browser to see token data
 
 @app.route('/glucose') # This is what powers the dashboard chart
 def glucose():
@@ -96,6 +138,14 @@ def glucose():
             "endDate": "2026-03-20T00:00:00"
         }
     )
+    if response.status_code == 401:
+        refresh_access_token()
+        response = requests.get(
+            "https://sandbox-api.dexcom.com/v3/users/self/egvs",
+            headers={"Authorization": "Bearer " + session['access_token']},
+            params={"startDate": "2026-03-10T00:00:00", "endDate": "2026-03-20T00:00:00"}
+        )
+
     data = response.json()
 
     for reading in data['records']:
@@ -108,7 +158,7 @@ def glucose():
                 trend_rate=reading.get('trendRate')
             )
             db.session.add(new_reading)
-    
+
     db.session.commit()
     return jsonify(data)
 
@@ -123,29 +173,8 @@ def readings():
 
 @app.route('/stats')
 def stats():
-    all_readings = GlucoseReading.query.all() # query the db and grab every row from the GR table and store them in A_R
-    df = pd.DataFrame ([{ # df meaning DataFrame, pandas version of a table
-        'timestamp': r.timestamp,
-        'value': r.value,
-        'trend': r.trend
-    } for r in all_readings])
-
-    print(df.columns.tolist())
-    avg = df['value'].mean()
-    high = df['value'].max()
-    low = df['value'].min()
-    in_range = df[(df['value'] >= 70) & (df['value'] <=160)]
-    rec_range = df[(df['value'] >=90) & (df['value'] <=130)]
-    tir = round(len(in_range) / len(df) * 100, 1)
-    rec_tir = round(len(rec_range) / len(df) * 100, 1) 
-
-    return jsonify({
-        'avg': round(avg, 1),
-        'high': int(high),
-        'low': int(low),
-        'tir': tir,
-        'rec_tir':rec_tir
-    })
+    stats = get_glucose_stats()
+    return jsonify(stats)
 
 @app.route('/logout')
 def logout():
@@ -166,28 +195,15 @@ def range():
 @limiter.limit("5 per hour")
 def analyze():
     life_choices = request.get_json()
-    all_readings = GlucoseReading.query.all()
-    df = pd.DataFrame([{
-    'timestamp': r.timestamp,
-    'value': r.value,
-    'trend': r.trend
-    } for r in all_readings])
-
-    avg = df['value'].mean()
-    high = df['value'].max()
-    low = df['value'].min()
-    in_range = df[(df['value'] >= 70) & (df['value'] <=160)]
-    rec_range = df[(df['value'] >=90) & (df['value'] <=130)]
-    tir = round(len(in_range) / len(df) * 100, 1)
-    rec_tir = round(len(rec_range) / len(df) * 100, 1)
+    stats = get_glucose_stats()
 
     user_message = f"""
     Glucose Stats:
-    - Average: {round(avg, 1)} mg/dl
-    - High: {int(high)}
-    - Low: {int(low)}
-    - Time in Range: {tir}%
-    - Recommended Time in Range: {rec_tir}%
+    - Average: {stats['avg']} mg/dl
+    - High: {stats['high']} mg/dl
+    - Low: {stats['low']} mg/dl
+    - Time in Range: {stats['tir']}%
+    - Recommended Time in Range: {stats['rec_tir']}%
 
     Lifestyle:
     - Diet: {life_choices['diet']}
