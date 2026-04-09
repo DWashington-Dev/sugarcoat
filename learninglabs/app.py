@@ -217,20 +217,23 @@ def analyze():
 
     user_message = f"""
     Glucose Stats:
-    - Standard Deviation: {stats['std_dev']}
-    - GMI: {stats['gmi']}
-    - Super High: {stats['tir_super_high']}
-    - High: {stats['tir_high']}
-    - Low: {stats['tir_low']}
-    - Too Low: {stats['tir_too_low']}
-    - Time in Range: {stats['tir']}%
-    - Recommended Time in Range: {stats['rec_tir']}%
+    - Average: {stats['avg']} mg/dL
+    - Highest Reading: {stats['high']} mg/dL
+    - Lowest Reading: {stats['low']} mg/dL
+    - Standard Deviation: {stats['std_dev']} mg/dL
+    - GMI (A1C Equivalent): {stats['gmi']}
+    - Time in Range (70-180 mg/dL): {stats['tir']}%
+    - Recommended Time in Range (90-130 mg/dL): {stats['rec_tir']}%
+    - Very High (>250 mg/dL): {stats['tir_super_high']}%
+    - High (181-250 mg/dL): {stats['tir_high']}%
+    - Low (54-69 mg/dL): {stats['tir_low']}%
+    - Very Low (<54 mg/dL): {stats['tir_too_low']}%
 
-    Lifestyle:
+    Lifestyle Inputs:
     - Diet: {life_choices['diet']}
     - Activity: {life_choices['activity']}
     - CGM Engagement: {life_choices['cgm']}
-    - Dosing behavior: {life_choices['dosing']}
+    - Dosing Behavior: {life_choices['dosing']}
     """
 
     response = claude.messages.create(
@@ -238,12 +241,26 @@ def analyze():
         max_tokens = 1024,
         system = """You are a knowledgeable T1D analysis assistant, similar to an endocrinologist reviewing glucose data between appointments.
 
+Clinical benchmarks to use when contextualizing the user's numbers (ADA standards):
+- Time in Range (70-180 mg/dL): goal is >70%. 73%+ is genuinely strong control — worth saying so.
+- Very High (>250 mg/dL): goal is <5% of readings
+- Low (54-69 mg/dL): goal is <4% of readings
+- Very Low (<54 mg/dL): goal is <1% of readings — this is the danger zone
+- Standard deviation tells the real story. Two people can have the same average glucose but completely different control if one swings constantly. High std dev with a decent average means instability — flag it explicitly.
+- GMI (Glucose Management Indicator) is the A1C equivalent calculated from average glucose. A GMI of 7.0 is roughly 7% A1C. Always explain what the GMI number means to the user in plain English.
+
+Patterns worth watching for:
+- Low treatment overcorrection: treating a low with too many carbs causes a rebound high. Flag this if tir_too_low is low but very high readings are elevated.
+- Borderline-low bolus suppression: conservative dosing near 70 mg/dL means insulin gets withheld before meals, which causes post-meal highs even when overall TIR looks decent.
+- Basal vs bolus imbalance: highs while fasting or overnight point to a basal rate issue. Highs clustering after meals point to bolus timing or carb ratio.
+- Timing consistency matters as much as dose accuracy — irregular meal timing creates irregular glucose regardless of how well someone doses.
+
 Given a user's glucose stats and lifestyle inputs, provide a warm, plain-English analysis formatted in markdown that includes:
-- An "Uncoated" summary paragraph of overall patterns
+- An "Uncoated" summary paragraph that benchmarks their numbers against ADA targets and calls out what stands out
 - **Bolded keywords** for important clinical terms and findings
 - Key points written as complete sentences, not fragments
 - A "Sugar Rushes" section identifying likely causes of highs
-- A "Sugar Crashes" section identifying likely causes of lows  
+- A "Sugar Crashes" section identifying likely causes of lows
 - An "Off the Charts" section for outliers and unusual patterns most endocrinologists might miss
 - 2-3 specific, actionable suggestions under "Next Steps"
 
