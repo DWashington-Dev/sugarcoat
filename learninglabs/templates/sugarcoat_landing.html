@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>sugarCoat | Your Digital Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-dim": "#005096",
+                    "surface-container-high": "#e0e3e4",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#0099f0",
+                    "on-surface": "#2c2f30",
+                    "tertiary": "#6647b0",
+                    "on-secondary-container": "#004887",
+                    "on-secondary-fixed": "#003466",
+                    "on-surface-variant": "#595c5d",
+                    "inverse-surface": "#0c0f10",
+                    "on-error": "#ffefee",
+                    "on-secondary": "#eef2ff",
+                    "secondary-container": "#b9d3ff",
+                    "surface-tint": "#005f98",
+                    "error-container": "#fb5151",
+                    "on-primary-fixed-variant": "#002e4d",
+                    "secondary-fixed-dim": "#a1c5ff",
+                    "surface-dim": "#d1d5d7",
+                    "secondary-fixed": "#b9d3ff",
+                    "primary-dim": "#005385",
+                    "inverse-primary": "#00a2fd",
+                    "on-primary-fixed": "#000000",
+                    "tertiary-container": "#bca2ff",
+                    "surface-variant": "#dadddf",
+                    "on-error-container": "#570008",
+                    "surface": "#f5f6f7",
+                    "on-primary": "#ecf3ff",
+                    "primary-fixed": "#2aa7ff",
+                    "error-dim": "#9f0519",
+                    "error": "#b31b25",
+                    "primary-container": "#2aa7ff",
+                    "on-tertiary-fixed": "#1e0053",
+                    "surface-bright": "#f5f6f7",
+                    "on-tertiary-container": "#3a1482",
+                    "on-secondary-fixed-variant": "#005197",
+                    "inverse-on-surface": "#9b9d9e",
+                    "outline": "#757778",
+                    "surface-container-low": "#eff1f2",
+                    "surface-container-highest": "#dadddf",
+                    "tertiary-dim": "#5a3ba3",
+                    "primary": "#005f98",
+                    "outline-variant": "#abadae",
+                    "on-tertiary-fixed-variant": "#43208b",
+                    "secondary": "#005cab",
+                    "on-background": "#2c2f30",
+                    "tertiary-fixed-dim": "#b091ff",
+                    "tertiary-fixed": "#bca2ff",
+                    "on-primary-container": "#00253f",
+                    "on-tertiary": "#f8f0ff",
+                    "surface-container": "#e6e8ea",
+                    "background": "#f5f6f7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(42, 167, 255, 0.15);
+        }
+        .ethereal-glow {
+            background: radial-gradient(circle at 50% 50%, rgba(42, 167, 255, 0.08) 0%, transparent 70%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="text-on-surface selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
+<div class="flex justify-between items-center max-w-7xl mx-auto px-8 py-4">
+<div class="text-2xl font-bold tracking-tighter text-sky-600 dark:text-sky-400 lowercase">sugarcoat</div>
+<div class="hidden md:flex items-center gap-10 font-plus-jakarta-sans text-sm tracking-tight">
+<a class="text-sky-600 dark:text-sky-400 font-semibold hover:text-sky-500 dark:hover:text-sky-300 transition-colors duration-300 active:scale-95 transition-transform" href="#">Product</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-300 transition-colors duration-300 active:scale-95 transition-transform" href="#">Science</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-300 transition-colors duration-300 active:scale-95 transition-transform" href="#">Community</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-300 transition-colors duration-300 active:scale-95 transition-transform" href="#">Support</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 font-medium px-4 py-2 hover:text-sky-500 transition-colors">Login</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-full font-semibold shadow-lg shadow-primary/10 active:scale-95 transition-transform">Get Started</button>
+</div>
+</div>
+</nav>
+<main class="relative">
+<!-- Hero Section -->
+<section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-8 ethereal-glow">
+<div class="max-w-5xl mx-auto text-center space-y-10">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary-container/30 text-secondary font-medium text-xs uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">colors_spark</span>
+                    Next-Gen Metabolic Intelligence
+                </div>
+<h1 class="text-6xl md:text-8xl font-bold tracking-tight text-on-surface leading-[1.05]">
+                    Your metabolic harmony, <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-secondary">visualized.</span>
+</h1>
+<p class="max-w-2xl mx-auto text-xl text-on-surface-variant font-light leading-relaxed">
+                    SugarCoat transforms raw CGM data into a digital sanctuary, providing the clarity you need to thrive without the noise.
+                </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+<button class="w-full sm:w-auto px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full text-lg font-bold shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-transform">Get Started</button>
+<button class="w-full sm:w-auto px-10 py-5 glass-panel rounded-full text-lg font-semibold text-primary hover:bg-white/60 transition-all flex items-center justify-center gap-2">
+                        View Demo
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Floating Hero Visual -->
+<div class="mt-24 w-full max-w-6xl mx-auto px-4">
+<div class="glass-panel rounded-xl p-6 md:p-8 shadow-2xl shadow-primary/5">
+<div class="aspect-[16/9] rounded-lg overflow-hidden relative">
+<img alt="Minimalist dashboard UI" class="w-full h-full object-cover" data-alt="Minimalist health dashboard on a tablet showing clean blue pulse waves and soft translucent glucose data cards on a white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7SCdt-5O4aOaEzfLEyJzKDLiN3hC0lTAhk1_Y86IZC5jEM0dIyYYmkP_hfCYqsMd8ybFO3YgML-7rgQ7z4oLfPTYeYoDPOOMPYhc4UpqiSmrTjWS-X5f2hHEOFIh80E8EG9eJBam4myeM4UddGiVsSyrNqRiEOfftq2-KceJLE-uWjChRte2fqaY-NfA5DuyVYoGIT4IHurQxd4k-t2TKDTGhT9tOhd5hgpJb6_zFyuAjyWBu97zsUtMJj3jQlX17A7RrqEpS0j0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Section 1: Ethereal Analysis -->
+<section class="py-32 px-8 max-w-7xl mx-auto overflow-hidden">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+<div class="space-y-8 order-2 lg:order-1">
+<div class="glass-panel p-10 rounded-xl relative group">
+<div class="absolute -top-6 -right-6 w-24 h-24 bg-primary-container/20 rounded-full blur-3xl group-hover:bg-primary-container/40 transition-colors"></div>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<span class="text-xs font-bold text-primary tracking-tighter bg-primary/5 px-3 py-1 rounded-full uppercase">Live Flow</span>
+</div>
+<div class="space-y-2">
+<p class="text-2xl font-bold text-on-surface">Your metabolic flow is exceptionally steady today...</p>
+<p class="text-on-surface-variant leading-relaxed">The post-meal peak at 12:30 PM was effectively cushioned by your morning walk. Your body is maintaining a state of serene equilibrium.</p>
+</div>
+<div class="pt-4 flex items-end justify-between border-t border-primary/5">
+<div class="flex gap-1 items-baseline">
+<span class="text-4xl font-bold text-primary">94</span>
+<span class="text-sm font-semibold text-on-surface-variant">mg/dL</span>
+</div>
+<div class="w-32 h-12 flex items-center justify-center">
+<!-- Simplified Wave Pattern -->
+<svg class="w-full h-full text-primary-container opacity-50" viewbox="0 0 120 40">
+<path d="M0 20 Q 30 10 60 20 T 120 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-8 order-1 lg:order-2">
+<h2 class="text-4xl md:text-5xl font-bold tracking-tight text-on-surface">AI-driven <br/><span class="text-primary-dim">Ethereal Analysis</span></h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                        Beyond simple numbers, our proprietary intelligence weaves your raw metrics into a narrative of wellbeing. It understands the context of your day—the stress, the movement, the rest—to offer guidance that feels like intuition.
+                    </p>
+<ul class="space-y-4 pt-4">
+<li class="flex items-center gap-3 text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Predictive trend modeling
+                        </li>
+<li class="flex items-center gap-3 text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Context-aware insulin sensitivity
+                        </li>
+<li class="flex items-center gap-3 text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Soft-nudge meal optimization
+                        </li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Feature Section 2: Digital Sanctuary -->
+<section class="py-32 px-8 bg-surface-container-low/50">
+<div class="max-w-7xl mx-auto">
+<div class="text-center mb-20 space-y-4">
+<h2 class="text-4xl md:text-5xl font-bold tracking-tight text-on-surface">The Digital Sanctuary</h2>
+<p class="text-lg text-on-surface-variant max-w-2xl mx-auto">We believe metabolic health shouldn't be a source of stress. Our interface is designed to soothe, not overwhelm.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Bento Piece 1 -->
+<div class="md:col-span-2 glass-panel p-8 rounded-xl flex flex-col justify-between h-[400px]">
+<div>
+<span class="material-symbols-outlined text-primary mb-4 text-4xl">air</span>
+<h3 class="text-2xl font-bold text-on-surface mb-4">Breathable Interface</h3>
+<p class="text-on-surface-variant">Intentional whitespace and high-contrast typography reduce cognitive load, allowing you to absorb critical insights at a glance without the clutter of traditional health apps.</p>
+</div>
+<div class="mt-8 rounded-lg overflow-hidden border border-white/40 h-48 bg-white/20">
+<img alt="Breathable UI design" class="w-full h-full object-cover" data-alt="Close up of a mobile app interface featuring extreme white space, soft blue typography and rounded translucent buttons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3oRP1BfwYmOH4iI2PrJVscw1bpstXBYQFT7RPcdCpZam64NCiQFt2liOO6Pjl1ZFPojydjbMUIn3756LpwSqGsADMZBNBscNd9qtgPyvCJH41_sBPYiaBm5Yslq6mNzML0GLwSVd62LxE-QCP_B-H3BXXDL9KXRxPr4L_swL-wTO0yyX3ytfUw0UFy3vpHDWZIt7tP568pDiXuxG2_2uxvDKPd8RuI8UI6UGlNx9DCXubEe8ZO25_OaeypPtdDfoNSnXDr2uUHC8"/>
+</div>
+</div>
+<!-- Bento Piece 2 -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between h-[400px] bg-primary/5">
+<div>
+<span class="material-symbols-outlined text-primary mb-4 text-4xl">notifications_off</span>
+<h3 class="text-2xl font-bold text-on-surface mb-4">Silence the Noise</h3>
+<p class="text-on-surface-variant">Adaptive alerts that only speak when they truly need to. We filter out the micro-fluctuations so you stay focused on the big picture.</p>
+</div>
+<div class="flex items-center justify-center p-4">
+<span class="material-symbols-outlined text-8xl text-primary/20">vibration</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Section 3: Deep History -->
+<section class="py-32 px-8 max-w-7xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+<div class="space-y-8">
+<h2 class="text-4xl md:text-5xl font-bold tracking-tight text-on-surface">Deep History</h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                        Uncover patterns over weeks and months with our multi-layered history view. SugarCoat identifies long-term shifts in your metabolism, helping you understand how lifestyle changes are truly affecting your baseline harmony.
+                    </p>
+<div class="grid grid-cols-2 gap-6">
+<div class="p-6 rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="text-3xl font-bold text-primary mb-1">98%</div>
+<div class="text-xs uppercase font-bold text-on-surface-variant tracking-widest">In Range</div>
+</div>
+<div class="p-6 rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="text-3xl font-bold text-secondary mb-1">102</div>
+<div class="text-xs uppercase font-bold text-on-surface-variant tracking-widest">Avg Glucose</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="glass-panel p-8 rounded-xl relative z-10">
+<img alt="Detailed trends graph" class="rounded-lg w-full" data-alt="A sophisticated health data visualization chart with glowing blue lines against a soft frosted glass background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTn4syd6d1QzQoqLpAjCLFlWNZsoUIJlpsdlf-8TFGVnPIXWs9HAgGQ35Khv3FP32i82l2Ke1-NVi4my-X9_cb4-xxAleVU9_dVDWqWSp_-Th0x3fOh9GT6plk3g5hjHkZh647pa5xn1zN6Tvv07GuG3PruO5lKTn6sx-Dcv2B6qCTIkFassGzRPEUxIKH_y61Dwhac66IH6wDFohZeFRCDrDtlogs0COpc9JhQXFGvSobKzW9KBYEn1eSGme59a5oRk0xu8GmFsI"/>
+</div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] -z-10"></div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-32 px-8">
+<div class="max-w-4xl mx-auto glass-panel p-16 rounded-xl text-center space-y-10 relative overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-primary-container to-transparent"></div>
+<h2 class="text-4xl md:text-5xl font-bold tracking-tight text-on-surface">Experience metabolic serenity.</h2>
+<p class="text-xl text-on-surface-variant max-w-xl mx-auto">Join the waitlist for the sugarcoat private beta and rediscover the harmony in your health data.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<input class="w-full sm:w-80 px-6 py-4 rounded-full border-none bg-white shadow-sm focus:ring-2 focus:ring-primary/20 text-on-surface font-medium outline-none" placeholder="Enter your email" type="email"/>
+<button class="w-full sm:w-auto px-10 py-4 bg-primary text-on-primary rounded-full font-bold shadow-xl shadow-primary/20 hover:bg-primary-dim transition-all">Apply for Access</button>
+</div>
+<p class="text-xs font-bold text-on-surface-variant tracking-widest uppercase">Limited Beta Slots Available</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-20 bg-slate-50 dark:bg-slate-950">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-8 gap-8">
+<div class="flex flex-col gap-4">
+<div class="text-lg font-bold lowercase text-sky-600">sugarcoat</div>
+<p class="font-plus-jakarta-sans text-xs uppercase tracking-widest text-slate-400 dark:text-slate-600">© 2024 SugarCoat. Your Digital Sanctuary.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8 font-plus-jakarta-sans text-xs uppercase tracking-widest">
+<a class="text-slate-400 dark:text-slate-600 hover:text-sky-500 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-slate-400 dark:text-slate-600 hover:text-sky-500 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-slate-400 dark:text-slate-600 hover:text-sky-500 transition-colors opacity-80 hover:opacity-100" href="#">Cookie Settings</a>
+<a class="text-slate-400 dark:text-slate-600 hover:text-sky-500 transition-colors opacity-80 hover:opacity-100" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

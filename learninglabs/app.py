@@ -52,15 +52,33 @@ def get_glucose_stats():
     tir = round(len(in_range) / len(df) * 100, 1)
     rec_tir = round(len(rec_range) / len(df) * 100, 1)
     
+    std_dev = round(float(df['value'].std()), 1)
+    gmi = round(3.31 + 0.02392 * avg, 2)
+
+    super_high = df[df['value'] > 250]
+    high_range = df[(df['value'] > 180) & (df['value'] <= 250)]
+    tir_too_low_low = df[df['value'] < 54]
+    low_range = df[(df['value'] >= 54) & (df['value'] < 70)]
+
+    total = len(df)
+    tir_super_high = round(len(super_high) / total * 100, 1)
+    tir_high = round(len(high_range) / total * 100, 1)
+    tir_too_low = round(len(tir_too_low_low) / total * 100, 1)
+    tir_low = round(len(low_range) / total * 100, 1)
+
     return {
         'avg': round(avg, 1),
         'high': int(high),
         'low': int(low),
+        'std_dev': std_dev,
+        'gmi': gmi,
         'tir': tir,
-        'rec_tir':rec_tir
+        'rec_tir': rec_tir,
+        'tir_super_high': tir_super_high,
+        'tir_high': tir_high,
+        'tir_low': tir_low,
+        'tir_too_low': tir_too_low
     }
-
-- Time in Range: {stats['tir']}%
 
 def refresh_access_token():
     response = requests.post(
@@ -199,9 +217,12 @@ def analyze():
 
     user_message = f"""
     Glucose Stats:
-    - Average: {stats['avg']} mg/dl
-    - High: {stats['high']} mg/dl
-    - Low: {stats['low']} mg/dl
+    - Standard Deviation: {stats['std_dev']}
+    - GMI: {stats['gmi']}
+    - Super High: {stats['tir_super_high']}
+    - High: {stats['tir_high']}
+    - Low: {stats['tir_low']}
+    - Too Low: {stats['tir_too_low']}
     - Time in Range: {stats['tir']}%
     - Recommended Time in Range: {stats['rec_tir']}%
 

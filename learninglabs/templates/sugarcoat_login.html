@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>sugarcoat - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#3a1482",
+                    "surface-dim": "#d1d5d7",
+                    "surface": "#f5f6f7",
+                    "primary": "#005f98",
+                    "error-dim": "#9f0519",
+                    "on-surface-variant": "#595c5d",
+                    "on-tertiary-fixed-variant": "#43208b",
+                    "on-secondary-fixed": "#003466",
+                    "surface-container": "#e6e8ea",
+                    "on-secondary": "#eef2ff",
+                    "outline": "#757778",
+                    "on-secondary-container": "#004887",
+                    "tertiary-fixed-dim": "#b091ff",
+                    "secondary-fixed": "#b9d3ff",
+                    "on-tertiary": "#f8f0ff",
+                    "on-error": "#ffefee",
+                    "inverse-surface": "#0c0f10",
+                    "surface-container-highest": "#dadddf",
+                    "on-tertiary-fixed": "#1e0053",
+                    "error-container": "#fb5151",
+                    "on-background": "#2c2f30",
+                    "secondary-container": "#b9d3ff",
+                    "primary-fixed-dim": "#0099f0",
+                    "on-primary-fixed-variant": "#002e4d",
+                    "outline-variant": "#abadae",
+                    "tertiary-dim": "#5a3ba3",
+                    "tertiary-container": "#bca2ff",
+                    "primary-dim": "#005385",
+                    "on-error-container": "#570008",
+                    "background": "#f5f6f7",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#b31b25",
+                    "tertiary": "#6647b0",
+                    "primary-container": "#2aa7ff",
+                    "tertiary-fixed": "#bca2ff",
+                    "secondary-dim": "#005096",
+                    "secondary": "#005cab",
+                    "surface-container-high": "#e0e3e4",
+                    "on-primary-container": "#00253f",
+                    "primary-fixed": "#2aa7ff",
+                    "surface-container-low": "#eff1f2",
+                    "on-primary": "#ecf3ff",
+                    "secondary-fixed-dim": "#a1c5ff",
+                    "surface-variant": "#dadddf",
+                    "surface-tint": "#005f98",
+                    "on-secondary-fixed-variant": "#005197",
+                    "inverse-on-surface": "#9b9d9e",
+                    "inverse-primary": "#00a2fd",
+                    "on-primary-fixed": "#000000",
+                    "surface-bright": "#f5f6f7",
+                    "on-surface": "#2c2f30"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f5f6f7;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(42, 167, 255, 0.15);
+        }
+        .ethereal-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(42, 167, 255, 0.08) 0%, rgba(245, 246, 247, 0) 70%);
+            z-index: -1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-on-surface">
+<!-- Ethereal Background Elements -->
+<div class="ethereal-glow -top-48 -left-48"></div>
+<div class="ethereal-glow top-1/2 -right-48"></div>
+<!-- Top Navigation (Shell Supression Applied: Only Brand Anchor) -->
+<header class="fixed top-0 w-full z-50 flex justify-center items-center h-24 px-8 bg-white/30 backdrop-blur-xl">
+<div class="text-3xl font-black text-primary tracking-tighter lowercase">
+            sugarcoat
+        </div>
+</header>
+<main class="flex-grow flex items-center justify-center px-6 pt-24 pb-12">
+<div class="w-full max-auto max-w-[480px] space-y-10">
+<!-- Login Card -->
+<div class="glass-card rounded-xl p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,95,152,0.08)]">
+<div class="space-y-2 mb-10 text-center">
+<h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-on-surface">
+                        Welcome back to your sanctuary.
+                    </h1>
+<p class="text-on-surface-variant text-lg">
+                        Continue your journey to balanced health.
+                    </p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-primary ml-1">Email Address</label>
+<input class="w-full h-14 px-6 bg-surface-container-lowest border border-outline-variant/20 rounded-full focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all duration-300 text-on-surface placeholder:text-outline-variant" placeholder="hello@companion.com" type="email"/>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center ml-1">
+<label class="text-xs font-bold uppercase tracking-widest text-primary">Password</label>
+<a class="text-xs font-bold uppercase tracking-widest text-primary-dim hover:text-primary transition-colors" href="#">Forgot?</a>
+</div>
+<input class="w-full h-14 px-6 bg-surface-container-lowest border border-outline-variant/20 rounded-full focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all duration-300 text-on-surface placeholder:text-outline-variant" placeholder="••••••••" type="password"/>
+</div>
+<button class="w-full h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 text-lg" type="submit">
+                        Login
+                    </button>
+</form>
+<div class="relative my-10">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant/20"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase tracking-[0.3em] font-bold">
+<span class="bg-transparent px-4 text-outline-variant">Or</span>
+</div>
+</div>
+<button class="w-full h-14 flex items-center justify-center gap-3 bg-surface-container-lowest/50 border border-primary/20 text-primary font-bold rounded-full hover:bg-white hover:shadow-md transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">glucose</span>
+                    Connect with Dexcom
+                </button>
+</div>
+<!-- Visual Decorative Element -->
+<div class="flex justify-center">
+<div class="flex -space-x-3 overflow-hidden">
+<img class="inline-block h-10 w-10 rounded-full ring-4 ring-surface" data-alt="close-up portrait of a serene young woman with soft natural lighting and a peaceful expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCboBi-TzJoiAlH78Hk5wUAMVQYzm_ewBadDdSINPFu6eclQFvbBBqoSDSZhhnhwKpAbW8dMyk7rOvndtRhLUTzWnApovoWKDhe1caY1ugfUryWMIIRxGZU3IpiIhaWOJQW5nQYs3H7ar-RQ_JmvYj1N9_XjSXTKPlTZC4iN34mSU3bKkZZrgDg2OLJKSWFbe73BRwKVq1ivZG-8ViulJggpI8hkpYt9iY-ykDCeFLrsYL4PsFRvha_Y_O_-3PoE5QuvvgurlBavuw"/>
+<img class="inline-block h-10 w-10 rounded-full ring-4 ring-surface" data-alt="close-up portrait of a smiling middle-aged man in a sunlit outdoor setting with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmHU2oT6j4N8H45jeZVJ64-yBTjnjxjzlrv_X8d7ZeVzjgwiptKhwdDZengrXszSoEOgC0nZWdrV2fSA7VasWj5gd2GsM-PQtGxoXw5NAX9lO7K5BDoPr8BTqlO86gfNfkUOmER1XxEQbbAJo42tjSllT4s1rdjsxaWIBLOOVtYTbSf7ppA5B219Vvf4P3oqQdXzgprVoPGRFsa66aoqK_OltzL4UVaUTs8h_YvVkd5HX0NO_-7dRzTDKK8kxUmUM6PzuW7Y6ufy8"/>
+<img class="inline-block h-10 w-10 rounded-full ring-4 ring-surface" data-alt="portrait of a focused young person in a high-end modern apartment with morning light filtering through curtains" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBppOhz_7stFbwC3utueXFuNPkahj6gwZB3hAiQ0gwMAkcynwzsWOnqbqgVh1TVH5PT6snqr9bTVbubTFTnhXn28_UvBo7eRBX9iAIkWw5yTLPx9cL2YhpD-Ku3nIE4MLFePawqz1uLLaL8Eaq5_rXEfMYnUjvQ3jhM4xgAnwamTulaFRoNBC3658JrHxeQ3PvVui-JRoaN2RD0I8Sezorptf31A6k_oltEGp3doITN1faskj0pFnTKHOVGeQ5QeiItgYslbyntFD8"/>
+<div class="flex items-center justify-center h-10 w-10 rounded-full ring-4 ring-surface bg-primary-container text-[10px] font-bold text-on-primary-container">
+                        +12k
+                    </div>
+</div>
+</div>
+<p class="text-center text-sm text-on-surface-variant font-medium">
+                Joined by 12,000+ companions today.
+            </p>
+</div>
+</main>
+<!-- Footer Component from Shared JSON -->
+<footer class="w-full py-12 flex flex-col items-center justify-center gap-6 max-w-7xl mx-auto px-4 bg-transparent">
+<div class="flex gap-8">
+<a class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-sky-500 transition-opacity opacity-80 hover:opacity-100" href="#">Privacy</a>
+<a class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-sky-500 transition-opacity opacity-80 hover:opacity-100" href="#">Terms</a>
+<a class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-sky-500 transition-opacity opacity-80 hover:opacity-100" href="#">Support</a>
+</div>
+<div class="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-500/60 font-plus-jakarta-sans">
+            © 2024 sugarcoat personal glucose companion
+        </div>
+</footer>
+</body></html>
